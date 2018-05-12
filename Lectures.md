@@ -1,6 +1,6 @@
 ## Лекции
 
-1. [Введение](https://auca.github.io/itdc-android/lecture-1.html)
+1. [Введение](https://auca.github.io/itdc-droid/lecture-1.html)
 
 ### Видео
 
