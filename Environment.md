@@ -19,3 +19,7 @@
 * [Visual Studio Emulator for Android](https://www.visualstudio.com/en-us/features/msft-android-emulator-vs.aspx)
 * [Genymotion](https://www.genymotion.com)
 
+### Arduino
+
+* [Arduino IDE](https://www.arduino.cc/en/Main/Software)
+* [CH340 Driver](https://sparks.gogo.co.nz/ch340.html)
