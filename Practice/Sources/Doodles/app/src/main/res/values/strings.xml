@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Doodles</string>
+    <string name="title_doodle_list">Doodles</string>
+    <string name="title_doodle_detail">Doodle Detail</string>
+</resources>

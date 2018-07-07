@@ -1,0 +1,30 @@
+package com.toksaitov.doodles.dummy;
+
+import android.arch.lifecycle.LiveData;
+import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Delete;
+import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
+
+import java.util.List;
+
+@Dao
+public interface DoodleDao {
+
+    @Insert
+    void insert(Doodle doodle);
+
+    @Delete
+    void delete(Doodle doodle);
+
+    @Update
+    void update(Doodle doodle);
+
+    @Query("DELETE FROM doodle_table")
+    void deleteAll();
+
+    @Query("SELECT * from doodle_table")
+    LiveData<List<Doodle>> getAllDoodles();
+
+}
