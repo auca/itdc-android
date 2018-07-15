@@ -44,6 +44,7 @@ public class DoodleRepository {
             return null;
         }
     }
+
     private static class UpdateAsyncTask extends AsyncTask<Doodle, Void, Void> {
         private DoodleDao asyncTaskDao;
 
@@ -57,6 +58,7 @@ public class DoodleRepository {
             return null;
         }
     }
+
     private static class DeleteAsyncTask extends AsyncTask<Doodle, Void, Void> {
         private DoodleDao asyncTaskDao;
 

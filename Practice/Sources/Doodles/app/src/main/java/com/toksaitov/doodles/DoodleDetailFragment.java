@@ -7,14 +7,16 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Toast;
 
-import com.toksaitov.doodles.dummy.DummyContent;
+import java.io.File;
+import java.io.IOException;
 
 public class DoodleDetailFragment extends Fragment {
-    public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_DOODLE_PATH = "item_path";
 
-    private DummyContent.DummyItem mItem;
+    private String doodlePath;
+    private DrawingView drawingView;
 
     public DoodleDetailFragment() {}
 
@@ -23,14 +25,13 @@ public class DoodleDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle fragmentArguments = getArguments();
-        if (fragmentArguments.containsKey(ARG_ITEM_ID)) {
-            String itemID = fragmentArguments.getString(ARG_ITEM_ID);
-            mItem = DummyContent.ITEM_MAP.get(itemID);
+        if (fragmentArguments.containsKey(ARG_DOODLE_PATH)) {
+            doodlePath = fragmentArguments.getString(ARG_DOODLE_PATH);
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.content);
+                appBarLayout.setTitle(doodlePath);
             }
         }
     }
@@ -39,10 +40,37 @@ public class DoodleDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.doodle_detail, container, false);
 
-        if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.doodle_detail)).setText(mItem.details);
+        if (doodlePath != null) {
+            drawingView = rootView.findViewById(R.id.doodle);
+
+            File file = new File(doodlePath);
+            try {
+                drawingView.loadDrawing(file);
+            } catch (IOException e) {
+                reportError(e.getMessage());
+                e.printStackTrace();
+            }
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (doodlePath != null) {
+            File file = new File(doodlePath);
+            try {
+                drawingView.saveDrawing(file);
+            } catch (IOException e) {
+                reportError("Failed to save the file.");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void reportError(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 }

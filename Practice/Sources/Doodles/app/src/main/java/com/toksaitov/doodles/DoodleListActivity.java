@@ -4,7 +4,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,19 +11,24 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.toksaitov.doodles.dummy.Doodle;
 import com.toksaitov.doodles.dummy.DoodleViewModel;
 import com.toksaitov.doodles.dummy.DummyContent;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 public class DoodleListActivity extends AppCompatActivity {
+    private static final String DRAWINGS_DIRECTORY_NAME = "drawings";
+
     private boolean mTwoPane;
 
     private DoodleViewModel doodleViewModel;
@@ -51,8 +55,7 @@ public class DoodleListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                createNewDoodle();
             }
         });
 
@@ -65,48 +68,89 @@ public class DoodleListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        adapter = new SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, mTwoPane);
+        adapter = new SimpleItemRecyclerViewAdapter(this);
         recyclerView.setAdapter(adapter);
+    }
+
+    private void createNewDoodle() {
+        File drawingsDirectory =
+            getDir(DRAWINGS_DIRECTORY_NAME, MODE_PRIVATE);
+        String path =
+            drawingsDirectory.getAbsoluteFile() +
+                File.separator + UUID.randomUUID() + "_" +
+                System.currentTimeMillis();
+
+        File doodleFile = new File(path);
+        try {
+            doodleFile.createNewFile();
+        } catch (IOException e) {
+            reportError("Failed to create a new image.");
+            return;
+        }
+
+        doodleViewModel.insert(new Doodle(path));
+
+        openDoodle(path);
+    }
+
+    private void openDoodle(String path) {
+        if (mTwoPane) {
+            Bundle fragmentArguments = new Bundle();
+            fragmentArguments.putString(DoodleDetailFragment.ARG_DOODLE_PATH, path);
+
+            DoodleDetailFragment fragment = new DoodleDetailFragment();
+            fragment.setArguments(fragmentArguments);
+
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.doodle_detail_container, fragment)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, DoodleDetailActivity.class);
+            intent.putExtra(DoodleDetailFragment.ARG_DOODLE_PATH, path);
+
+            startActivity(intent);
+        }
+    }
+
+    private void deleteDoodle(Doodle doodle) {
+        doodleViewModel.delete(doodle);
+
+        File doodleFile = new File(doodle.getPath());
+        if (!doodleFile.delete()) {
+            reportError("Failed to delete the image file.");
+        }
+    }
+
+    private void reportError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     public static class SimpleItemRecyclerViewAdapter extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
         private final DoodleListActivity mParentActivity;
-        private final List<DummyContent.DummyItem> mValues;
         private List<Doodle> doodles;
-        private final boolean mTwoPane;
 
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            Doodle item = (Doodle) view.getTag();
-            if (mTwoPane) {
-                Bundle fragmentArguments = new Bundle();
-                fragmentArguments.putString(DoodleDetailFragment.ARG_ITEM_ID, item.getPath());
-
-                DoodleDetailFragment fragment = new DoodleDetailFragment();
-                fragment.setArguments(fragmentArguments);
-
-                FragmentManager fragmentManager = mParentActivity.getSupportFragmentManager();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.doodle_detail_container, fragment)
-                        .commit();
-            } else {
-                Context context = view.getContext();
-                Intent intent = new Intent(context, DoodleDetailActivity.class);
-                intent.putExtra(DoodleDetailFragment.ARG_ITEM_ID, item.getPath());
-
-                context.startActivity(intent);
-            }
+                Doodle doodle = (Doodle) view.getTag();
+                mParentActivity.openDoodle(doodle.getPath());
             }
         };
 
-        SimpleItemRecyclerViewAdapter(DoodleListActivity parent,
-                                      List<DummyContent.DummyItem> items,
-                                      boolean twoPane) {
-            mValues = items;
+        private final View.OnLongClickListener mOnLongClickListener = new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Doodle doodle = (Doodle) view.getTag();
+                mParentActivity.deleteDoodle(doodle);
+
+                return true;
+            }
+        };
+
+        SimpleItemRecyclerViewAdapter(DoodleListActivity parent) {
             mParentActivity = parent;
-            mTwoPane = twoPane;
         }
 
         @Override
@@ -123,6 +167,7 @@ public class DoodleListActivity extends AppCompatActivity {
 
                 holder.itemView.setTag(current);
                 holder.itemView.setOnClickListener(mOnClickListener);
+                holder.itemView.setOnLongClickListener(mOnLongClickListener);
             } else {
                 holder.pathTextView.setText("Unknown Image Path");
             }

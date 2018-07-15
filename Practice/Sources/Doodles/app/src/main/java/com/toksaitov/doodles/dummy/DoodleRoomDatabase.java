@@ -31,11 +31,11 @@ public abstract class DoodleRoomDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(final Void... params) {
-            mDao.deleteAll();
-            Doodle doodle1 = new Doodle("/data/image_1.png");
-            mDao.insert(doodle1);
-            Doodle doodle2 = new Doodle("/data/image_2.png");
-            mDao.insert(doodle2);
+//            mDao.deleteAll();
+//            Doodle doodle1 = new Doodle("/data/data/com.toksaitov.doodles/image_1.webp");
+//            mDao.insert(doodle1);
+//            Doodle doodle2 = new Doodle("/data/data/com.toksaitov.doodles/image_2.webp");
+//            mDao.insert(doodle2);
 
             return null;
         }

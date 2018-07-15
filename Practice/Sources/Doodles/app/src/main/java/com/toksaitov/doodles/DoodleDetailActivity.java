@@ -36,10 +36,10 @@ public class DoodleDetailActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             Intent activityArguments = getIntent();
-            String id = activityArguments.getStringExtra(DoodleDetailFragment.ARG_ITEM_ID);
+            String id = activityArguments.getStringExtra(DoodleDetailFragment.ARG_DOODLE_PATH);
 
             Bundle fragmentArguments = new Bundle();
-            fragmentArguments.putString(DoodleDetailFragment.ARG_ITEM_ID, id);
+            fragmentArguments.putString(DoodleDetailFragment.ARG_DOODLE_PATH, id);
 
             DoodleDetailFragment fragment = new DoodleDetailFragment();
             fragment.setArguments(fragmentArguments);

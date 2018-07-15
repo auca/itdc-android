@@ -19,6 +19,7 @@ import java.io.IOException;
 public class DrawingView extends View {
     final float BRUSH_WIDTH = 30;
 
+    private Bitmap loadedImage;
     private Bitmap backBuffer;
     private Canvas backBufferCanvas;
     private Paint backBufferPaint;
@@ -52,10 +53,13 @@ public class DrawingView extends View {
         brushPaint.setColor(brushColor);
     }
 
-    public void loadDrawing(File file) {
+    public void loadDrawing(File file) throws IOException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        backBuffer = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+        loadedImage = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+        if (loadedImage == null) {
+            throw new IOException("Failed to load the file.");
+        }
     }
 
     public void saveDrawing(File file) throws IOException {
@@ -75,8 +79,13 @@ public class DrawingView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
-        backBuffer = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        backBufferCanvas = new Canvas(backBuffer);
+        if (w > 0 && h > 0) {
+            backBuffer = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            backBufferCanvas = new Canvas(backBuffer);
+            if (loadedImage != null) {
+                backBufferCanvas.drawBitmap(loadedImage, 0, 0, backBufferPaint);
+            }
+        }
     }
 
     @Override
